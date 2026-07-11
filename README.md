@@ -21,8 +21,7 @@ Implemented:
 - ratio/z-score spread mean reversion;
 - linear transaction costs for the momentum strategies;
 - performance, risk and benchmark-relative metrics;
-- interactive Plotly equity and drawdown charts;
-- unit tests for momentum transaction costs and selected metrics.
+- interactive Plotly equity and drawdown charts.
 
 Research roadmap:
 
@@ -55,10 +54,11 @@ out of sample, the risk-free rate is simplified, and the transaction
 cost model does not yet include dynamic spread, slippage or market
 impact.
 
-The [`rapport/`](rapport/) directory records the research process and
-the [`results/`](results/) directory contains experiment tables. Older
-research snapshots may use earlier assumptions and should not be
-compared mechanically with the current run.
+The [`reports/`](reports/README.md) directory contains harmonised
+research notes organised by axis, while [`results/`](results/) contains
+the underlying experiment tables. Older research snapshots may use
+earlier assumptions and should not be compared mechanically with the
+current run.
 
 ## Run the project
 
@@ -76,21 +76,14 @@ in [`src/config.py`](src/config.py). If cached data are unavailable, the
 loader downloads adjusted market data through `yfinance`. Interactive
 charts are generated under `outputs/plots/`.
 
-Run the current tests with:
-
-```bash
-python3 -m unittest discover -s tests -v
-```
-
 ## Repository structure
 
 ```text
 Quant_Lab/
 |-- main.py                 # Current end-to-end research workflow
 |-- src/                    # Data, strategies, metrics and plots
-|-- tests/                  # Current unit tests
 |-- results/                # Experiment and sensitivity tables
-|-- rapport/                # Dated research notes
+|-- reports/                # Harmonised reports organised by axis
 `-- requirements.txt
 ```
 
@@ -102,7 +95,6 @@ Planned axes are intentionally not represented by empty directories.
 - introduce strict in-sample/out-of-sample or walk-forward evaluation;
 - study parameter sensitivity and data-snooping risk;
 - improve market assumptions and transaction cost modelling;
-- broaden unit tests as the research workflow grows;
 - separate ratio-based spread mean reversion from a future
   cointegration-based pairs trading study;
 - regenerate or label historical reports when assumptions change.

@@ -22,7 +22,7 @@ class AlwaysLongStrategy(Strategy):
 class MomentumStrategy(Strategy):
 
     def __init__(self, data, horizon, transaction_cost = 0.0):
-        super().__init__(data)  #réutiliser le constructeur parent
+        super().__init__(data)  # Reuse the parent data-copying constructor.
         self.horizon = horizon
         self.transaction_cost = transaction_cost
 
@@ -43,7 +43,7 @@ class MomentumStrategy(Strategy):
 class MomentumVolTargetingStrategy(Strategy):
 
     def __init__(self, data, horizon, vol_window, target_vol, max_leverage, transaction_cost=0.0, rebal_threshold=0.0, trading_days=252):
-        super().__init__(data)  #réutiliser le constructeur parent
+        super().__init__(data)  # Reuse the parent data-copying constructor.
         self.horizon = horizon
         self.vol_window = vol_window
         self.target_vol = target_vol
@@ -85,7 +85,7 @@ class MomentumVolTargetingStrategy(Strategy):
 class MeanReversionPriceStrategy(Strategy):
 
     def __init__(self, data, z_threshold, rolling_days):
-        super().__init__(data)  #réutiliser le constructeur parent
+        super().__init__(data)  # Reuse the parent data-copying constructor.
         self.z_threshold = z_threshold
         self.rolling_days = rolling_days
     
@@ -106,7 +106,7 @@ class MeanReversionPriceStrategy(Strategy):
 class MeanReversionReturnStrategy(Strategy):
 
     def __init__(self, data, z_threshold, rolling_days):
-        super().__init__(data)  #réutiliser le constructeur parent
+        super().__init__(data)  # Reuse the parent data-copying constructor.
         self.z_threshold = z_threshold
         self.rolling_days = rolling_days
     
@@ -127,7 +127,7 @@ class MeanReversionReturnStrategy(Strategy):
 class SpreadMeanReversionStrategy(Strategy):
 
     def __init__(self, data, ticker_1, ticker_2, z_threshold, rolling_days):
-        super().__init__(data) #réutiliser le constructeur parent
+        super().__init__(data)  # Reuse the parent data-copying constructor.
         self.ticker_1 = ticker_1
         self.ticker_2 = ticker_2
         self.z_threshold = z_threshold

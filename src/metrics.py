@@ -2,25 +2,25 @@ import numpy as np
 
 def compute_metrics(result, risk_free_rate=0.0, trading_days=252, benchmark_return=None):
     """
-    result: DataFrame contenant au minimum 'strategy_return', 'equity' et 'drawdown'
-    renvoie: dict de métriques
+    result: DataFrame containing at least strategy_return, equity and drawdown.
+    returns: dictionary of performance and optional benchmark metrics.
     """
 
-    # calcul du rendement final
+    # Total compounded return.
     equity_0 = result["equity"].iloc[0]
     equity_n = result["equity"].iloc[-1]
     final_return = equity_n / equity_0 - 1
 
-    # calcul du rendement annualisé
+    # Annualised compounded return.
     n_days = result.shape[0]
     years = n_days / trading_days
     annual_return = (equity_n / equity_0) ** (1 / years) - 1
 
-    # calcul de la volatilité journalière et annuelle
+    # Daily and annualised volatility.
     daily_vol = result["strategy_return"].std()
     annual_vol = np.sqrt(trading_days) * daily_vol
 
-    # calcul du sharpe annuel
+    # Annualised Sharpe ratio.
     daily_mean = result["strategy_return"].mean()
     if daily_vol == 0:
         annual_sharpe = np.nan
@@ -29,7 +29,7 @@ def compute_metrics(result, risk_free_rate=0.0, trading_days=252, benchmark_retu
         annual_sharpe = (daily_mean - daily_rf) / daily_vol * np.sqrt(trading_days)
 
 
-    # calcul du drawdown maximum
+    # Maximum drawdown.
     max_drawdown = result["drawdown"].min()
 
     metrics = {
@@ -40,7 +40,7 @@ def compute_metrics(result, risk_free_rate=0.0, trading_days=252, benchmark_retu
         "max_drawdown": max_drawdown
     }
 
-    # métriques additionnelles si disponibles
+    # Add execution and exposure diagnostics when available.
     if "trade_size" in result.columns:
         metrics["n_trades"] = int((result["trade_size"] > 0).sum())
 

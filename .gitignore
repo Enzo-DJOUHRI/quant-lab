@@ -20,7 +20,11 @@ venv/
 
 # Personal planning documents
 road_map/
-rapport/2026-03-09_profil_objectifs_quant.md
+rapport/
+
+# Local historical files not presented as public work
+tests/
+src/data_loader_initial.py
 
 # Downloaded market data and regenerable interactive plots
 data/raw/

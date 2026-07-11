@@ -15,12 +15,12 @@ class DataLoader:
     def load_mono(self):
         ticker = self.tickers[0]
 
-        # Conversion du CSV en DataFrame s'il existe
+        # Load the local CSV cache when it exists.
         if self.file_path.exists():
             data = pd.read_csv(self.file_path, index_col=0, parse_dates=True)
             if (not data.empty) and {"price", "return"}.issubset(set(data.columns)):
                 return data
-            # CSV vide/invalide -> on retente un download propre.
+            # Retry a clean download when the cache is empty or invalid.
 
         data = yf.download(
                 ticker,
@@ -34,16 +34,16 @@ class DataLoader:
                 f"No data downloaded for {ticker}. Check ticker/date/network."
             )
 
-        # Prendre la colonne Close (yfinance multi-index ou simple index)
+        # Extract Close from either a yfinance MultiIndex or flat columns.
         if isinstance(data.columns, pd.MultiIndex):
             adj_close = data[("Close", ticker)].copy()
         else:
             adj_close = data["Close"].copy()
 
-        # Transformer en DataFrame et renommer close en price
+        # Convert the adjusted close series to the project schema.
         adj_close = adj_close.to_frame(name="price")
 
-        # calcule le rendement journalier et supprime les lignes Null
+        # Compute daily returns and remove missing rows.
         adj_close["return"] = adj_close["price"].pct_change()
         adj_close.dropna(inplace=True)
 
@@ -52,7 +52,7 @@ class DataLoader:
                 f"No usable rows for {ticker} after pct_change/dropna."
             )
 
-        # sauvegarder le DataFrame telecharge en CSV pour la suite
+        # Cache downloaded data for later experiments.
         self.file_path.parent.mkdir(parents=True, exist_ok=True)
         adj_close.to_csv(self.file_path)
 
@@ -80,7 +80,7 @@ class DataLoader:
                 f"No data downloaded for {self.tickers}. Check tickers/date/network."
             )
 
-        # Prendre la colonne Close (yfinance multi-index ou simple index)
+        # Extract Close from either a yfinance MultiIndex or flat columns.
         if isinstance(data.columns, pd.MultiIndex):
             if "Close" not in data.columns.get_level_values(0):
                 raise ValueError(
@@ -88,7 +88,7 @@ class DataLoader:
                 )
             adj_close = data["Close"].copy()
         else:
-            # Cas limite (souvent single ticker): une seule colonne Close
+            # Edge case: a single ticker returned with one Close column.
             if "Close" not in data.columns:
                 raise ValueError(
                     f"Close column not found in downloaded data for {self.tickers}."
@@ -96,7 +96,7 @@ class DataLoader:
             ticker = self.tickers[0]
             adj_close = data["Close"].to_frame(name=ticker)
 
-        # Garantit un DataFrame avec tickers en colonnes
+        # Ensure tickers are represented as DataFrame columns.
         if isinstance(adj_close, pd.Series):
             ticker = self.tickers[0]
             adj_close = adj_close.to_frame(name=ticker)
@@ -118,14 +118,14 @@ class DataLoader:
                 f"No usable Close rows for {self.tickers} after cleanup."
             )
 
-        # Transformer en DataFrame et renommer close en price
+        # Rename adjusted close columns to the project schema.
         adj_close.columns = [f"{ticker}_price" for ticker in adj_close.columns]
 
-        # calcule les rendements journaliers
+        # Compute daily returns.
         returns = adj_close.pct_change()
         returns.columns = [col.replace("_price", "_return") for col in returns.columns]
 
-        # concatène prix et rendements
+        # Combine prices and returns in one research dataset.
         data_multi = pd.concat([adj_close, returns], axis=1)
         data_multi.dropna(inplace=True)
 
@@ -134,7 +134,7 @@ class DataLoader:
                 f"No usable rows for {self.tickers} after pct_change/dropna."
             )
 
-        # sauvegarder le DataFrame téléchargé en CSV pour la suite
+        # Cache downloaded data for later experiments.
         self.file_path.parent.mkdir(parents=True, exist_ok=True)
         data_multi.to_csv(self.file_path)
 
