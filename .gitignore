@@ -1,0 +1,27 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local environments and secrets
+.venv/
+venv/
+.env
+.env.*
+!.env.example
+
+# Notebook checkpoints
+.ipynb_checkpoints/
+
+# Personal planning documents
+road_map/
+rapport/2026-03-09_profil_objectifs_quant.md
+
+# Downloaded market data and regenerable interactive plots
+data/raw/
+outputs/plots/
