@@ -49,7 +49,7 @@ def compute_metrics(result, risk_free_rate=0.0, trading_days=252, benchmark_retu
 
     if "signal" in result.columns:
         metrics["time_in_market"] = (result["signal"] != 0).mean()
-    
+
     if benchmark_return is not None:
         bench = benchmark_return
         strat = result["strategy_return"]
@@ -61,15 +61,15 @@ def compute_metrics(result, risk_free_rate=0.0, trading_days=252, benchmark_retu
         else:
             beta = np.cov(strat, bench, ddof=0)[0, 1] / benchmark_var
             alpha = (strat.mean() - beta * bench.mean()) * trading_days
-        
+
         tracking_error = (strat - bench).std() * np.sqrt(trading_days)
-        
+
         bench_annual = (1 + bench).prod() ** (1 / years) - 1
         if tracking_error == 0:
             information_ratio = np.nan
         else:
             information_ratio = (annual_return - bench_annual) / tracking_error
-        
+
         metrics["alpha"] = alpha
         metrics["beta"] = beta
         metrics["tracking_error"] = tracking_error

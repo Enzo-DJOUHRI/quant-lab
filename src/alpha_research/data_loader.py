@@ -8,7 +8,7 @@ class DataLoader:
         self.tickers = tickers
         self.start_date = start_date
         self.end_date = end_date
-        project_root = Path(__file__).resolve().parent.parent
+        project_root = Path(__file__).resolve().parents[2]
         tickers_name = "_".join(self.tickers)
         self.file_path = project_root / "data" / "raw" / f"{tickers_name}.csv"
 

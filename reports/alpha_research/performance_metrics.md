@@ -1,73 +1,145 @@
 # Performance and Benchmark-Relative Metrics
 
-## Purpose
+## Status
 
-This report defines the metrics currently produced by Quant Lab and the
-questions they answer. Metric definitions are part of the research
-method: changing an annualisation factor, benchmark or risk-free-rate
-assumption can change the interpretation of a backtest.
+Status: **current implementation reference**.
+
+This report explains the formulas currently implemented in
+[`../../src/alpha_research/metrics.py`](../../src/alpha_research/metrics.py).
+It is a guide to reading the existing outputs, not a claim that the metric
+layer is finished. The current public automated suite covers pricing;
+dedicated Alpha Research metric tests will be rebuilt when that part of the
+project is stabilised.
+
+## Why these definitions matter
+
+Metrics turn a full return path into a few numbers, but those numbers depend
+on choices such as annualisation, benchmark, risk-free rate and the definition
+of a trade. I keep those choices visible so that two experiments are not
+compared under different conventions by mistake.
+
+Let:
+
+- `r_t` be the daily strategy return;
+- `b_t` be the daily benchmark return;
+- `N` be the annualisation factor;
+- `rf` be the annual risk-free-rate input.
+
+The current workflow uses `N = 252` for exchange-traded assets and `N = 365`
+for BTC or ETH. The active risk-free rate is a simplified constant 2% annual
+input.
 
 ## Absolute performance metrics
 
-Let `r_t` be daily strategy returns and `N` the number of observations
-per year.
+### Total return
 
-| Metric | Definition | Research question |
-| --- | --- | --- |
-| Total return | `equity_end / equity_start - 1` | How much did capital change over the full sample? |
-| Annual return | Compound growth annualised over the sample | What was the equivalent yearly growth rate? |
-| Annual volatility | `std(r_t) * sqrt(N)` | How dispersed were returns? |
-| Sharpe ratio | `(mean(r_t) - rf/N) / std(r_t) * sqrt(N)` | Was excess return sufficient for total risk? |
-| Maximum drawdown | Minimum of `equity / running_peak - 1` | What was the largest peak-to-trough loss? |
+```text
+total_return = equity_last / equity_first - 1
+```
 
-The current convention uses 252 days for exchange-traded assets and
-365 days for BTC or ETH. The risk-free rate is currently a constant 2%
-placeholder.
+This is the compounded change between the first and last recorded equity
+values. The implementation does not yet prepend an explicit time-zero equity
+row. Consequently, the first realised return can be omitted from this ratio
+when `equity_first` differs from 1. This is a known measurement debt, not a
+financial convention to reproduce in future modules.
+
+### Annual return
+
+```text
+years = number_of_rows / N
+annual_return = (equity_last / equity_first) ** (1 / years) - 1
+```
+
+This is a compound annual growth rate over the observed row count. It should
+not be compared across assets unless the annualisation and calendar
+conventions are consistent.
+
+### Annual volatility
+
+```text
+daily_vol = sample_std(strategy_return)
+annual_vol = daily_vol * sqrt(N)
+```
+
+Pandas uses sample standard deviation by default (`ddof=1`) here. Volatility
+measures dispersion, not downside risk or the probability of loss.
+
+### Sharpe ratio
+
+```text
+daily_rf = rf / N
+sharpe = (mean(strategy_return) - daily_rf) / daily_vol * sqrt(N)
+```
+
+The risk-free rate is converted with a simple linear daily approximation.
+Sharpe is undefined when daily volatility is zero. It assumes that mean and
+standard deviation are informative summaries and does not account for skew,
+tail risk or path dependence.
+
+### Maximum drawdown
+
+```text
+running_peak_t = max(equity_0, ..., equity_t)
+drawdown_t = equity_t / running_peak_t - 1
+max_drawdown = min(drawdown_t)
+```
+
+Maximum drawdown records the worst observed peak-to-trough decline. It says
+nothing by itself about recovery time or the frequency of smaller drawdowns.
 
 ## Execution and exposure metrics
 
-| Metric | Definition | Research question |
+| Metric key | Current calculation | Exact meaning |
 | --- | --- | --- |
-| Number of trades | Days where `trade_size > 0` | How frequently did exposure change? |
-| Total cost | Sum of charged transaction costs | How much return was removed by the simplified cost model? |
-| Time in market | Fraction of days with a non-zero signal | How often was directional market risk active? |
+| `n_trades` | `sum(trade_size > 0)` | Number of exposure-adjustment days |
+| `total_cost` | `sum(transaction_cost_paid)` | Sum of modelled return charges |
+| `time_in_market` | `mean(signal != 0)` | Fraction of rows with an active directional signal |
 
-For continuous position sizing, the number of adjustment days should
-not be confused with the number of discrete round trips. Trade size and
-turnover magnitude provide additional context.
+`n_trades` is retained as the public metric key, but it is not a count of
+completed round trips. For continuously sized strategies, a small rebalance
+and a complete entry each count as one adjustment day.
+
+`time_in_market` currently reads `signal`. For volatility targeting this
+shows when the directional rule is active, not the magnitude of actual
+`exposure`. Average absolute exposure and an exposure-based activity metric
+are required for a complete risk interpretation.
 
 ## Benchmark-relative metrics
 
-Let `b_t` be the return of the underlying buy-and-hold benchmark.
+The underlying buy-and-hold return is currently used as benchmark when one is
+provided.
 
 ### Beta
 
 ```text
-beta = cov(r_t, b_t) / var(b_t)
+beta = population_covariance(r_t, b_t)
+       / population_variance(b_t)
 ```
 
-Beta estimates the strategy's sensitivity to benchmark movements. A
-long/flat timing rule should generally have a beta below one because it
-is not continuously invested.
+Both covariance and variance use `ddof=0`, which preserves the identity
+`beta = 1` when a return series is compared with itself. Beta is undefined
+when benchmark variance is zero.
 
-### Alpha
+### Benchmark-adjusted alpha
 
 ```text
-annual_alpha = (mean(r_t) - beta * mean(b_t)) * N
+alpha = (mean(r_t) - beta * mean(b_t)) * N
 ```
 
-Alpha is the annualised residual return after accounting for estimated
-benchmark exposure. Positive in-sample alpha is not evidence of a
-persistent edge.
+This is the formula currently implemented. It does not subtract the
+risk-free rate from strategy and benchmark returns, so it should be read as a
+simplified benchmark-adjusted mean return rather than a fully specified CAPM
+or Jensen alpha.
 
 ### Tracking error
 
 ```text
-tracking_error = std(r_t - b_t) * sqrt(N)
+tracking_error = sample_std(r_t - b_t) * sqrt(N)
 ```
 
-Tracking error measures how differently the strategy behaves from the
-benchmark.
+Tracking error measures the dispersion of active returns. A strategy can have
+low total volatility and high tracking error if it behaves very differently
+from its benchmark.
 
 ### Information ratio
 
@@ -76,13 +148,13 @@ information_ratio = (annual_return_strategy - annual_return_benchmark)
                     / tracking_error
 ```
 
-The information ratio asks whether active return compensated for active
-risk. It is undefined when tracking error is zero.
+The numerator uses compounded annual returns, while tracking error is based
+on daily active returns. The ratio is undefined when tracking error is zero.
 
-## Sanity conditions
+## Sanity identities
 
-When always-long returns are compared with the same asset return used
-as benchmark, the expected identities are:
+When always-long returns are compared with the same asset return used as the
+benchmark, the expected identities are:
 
 ```text
 beta = 1
@@ -91,32 +163,31 @@ tracking_error = 0
 information_ratio = undefined
 ```
 
-The covariance and variance calculations use the same population
-normalisation (`ddof=0`) so that the beta identity holds up to floating
-point precision.
+These identities test accounting consistency. They do not establish that the
+benchmark is economically appropriate for every strategy.
 
-## Interpretation example
+## Reading the metrics together
 
-For the current BTC volatility-targeting experiment:
+Sharpe and information ratio answer different questions. Sharpe compares
+excess return with total volatility; information ratio compares active return
+with benchmark deviation. A low-beta strategy can therefore have a high
+Sharpe and a negative information ratio when buy and hold dominates during a
+strong market trend. There is no mathematical contradiction.
 
-- Sharpe is positive and high relative to the other current rules;
-- beta is low because exposure is reduced and the strategy is often
-  flat;
-- tracking error is high because the strategy behaves very differently
-  from buy and hold;
-- information ratio is negative because BTC buy and hold earned a much
-  higher raw return over this strongly rising sample.
+No single metric establishes robustness. I read return together with
+volatility, drawdown, exposure, turnover, costs, benchmark sensitivity and
+temporal validation.
 
-There is no contradiction. Sharpe evaluates absolute return per unit of
-total risk, while information ratio evaluates relative return per unit
-of benchmark deviation.
+## Known limitations and next tests
 
-## Limitations
+- Prepend and test an explicit initial equity value before the first return.
+- Define an exposure-based `time_in_market` convention for continuous sizing.
+- Distinguish adjustment count, turnover magnitude and completed round trips.
+- Align strategy and benchmark indexes explicitly before relative metrics.
+- Decide whether alpha should remain a simple diagnostic or adopt an excess-
+  return regression with intercept and standard errors.
+- Test zero-variance, missing-data and short-sample cases.
+- Add synthetic identities for costs, compounding and annualisation.
 
-- A constant 2% risk-free rate is only a simplified placeholder for a
-  period in which short rates changed materially.
-- Alpha and beta are sample estimates and may vary through time.
-- The underlying asset is not always the most informative benchmark for
-  a dynamically risk-scaled strategy.
-- Metrics summarise a return path but do not replace distributional,
-  regime and out-of-sample analysis.
+Until these tests and conventions are fixed, I will use the metrics for
+diagnosis and comparison, not for strong performance claims.

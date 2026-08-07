@@ -8,10 +8,10 @@ class BacktestPlotter:
         self.results_dict = results_dict
         output_path = Path(output_dir)
         if not output_path.is_absolute():
-            project_root = Path(__file__).resolve().parent.parent
+            project_root = Path(__file__).resolve().parents[2]
             output_path = project_root / output_path
         self.output_dir = output_path
-    
+
     def plot_equity(self):
         fig = go.Figure()
 
@@ -21,7 +21,7 @@ class BacktestPlotter:
                             y= results["equity"],
                             mode="lines",
                             name= name))
-            
+
         fig.update_layout(title="Equity Curve Comparison",
                           xaxis_title="Date",
                           yaxis_title="Equity")
@@ -40,7 +40,7 @@ class BacktestPlotter:
                             y= results["drawdown"],
                             mode="lines",
                             name= name))
-            
+
         fig.update_layout(title="Drawdown Curve Comparison",
                           xaxis_title="Date",
                           yaxis_title="Drawdown")
@@ -49,7 +49,7 @@ class BacktestPlotter:
         output_path = self.output_dir / "drawdown_curve_comparison.html"
         fig.write_html(output_path, include_plotlyjs="cdn")
         print(f"Plot saved to: {output_path.resolve()}")
-    
+
     def plot_price_and_signal(self, strategy_name):
         results = self.results_dict[strategy_name]
         fig = make_subplots(specs=[[{"secondary_y": True}]])

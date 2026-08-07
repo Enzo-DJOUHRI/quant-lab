@@ -1,15 +1,38 @@
 # Data and Experiment Workflow
 
-## Current objective
+## Status
 
-The current workflow is intentionally small: download adjusted market
-prices, cache them locally, run a selected group of strategies, compute
-metrics and export interactive charts. It is a research script rather
-than a production backtesting engine.
+This page describes how the Python project currently loads data, runs an
+experiment and stores its outputs. It reflects the code as of 2026-08-07. The
+workflow is suitable for controlled learning experiments, but it is not a
+production data platform: dataset versioning, point-in-time metadata and a
+complete Alpha Research regression suite are still missing.
 
-## Data loading
+Relevant code:
 
-`src/data_loader.py` supports two schemas.
+- [`../../src/alpha_research/data_loader.py`](../../src/alpha_research/data_loader.py)
+- [`../../src/alpha_research/config.py`](../../src/alpha_research/config.py)
+- [`../../main.py`](../../main.py)
+
+## What belongs where
+
+I keep five types of files separate so that a result can be traced back to the
+code and assumptions that produced it:
+
+| File type | Location | Responsibility |
+| --- | --- | --- |
+| Source data cache | `data/raw/` | Local downloaded prices; regenerable and excluded from Git |
+| Research code | `src/` | Financial, statistical and data transformations |
+| Validation | `tests/` | Executable numerical and regression checks |
+| Experiment outputs | `results/` and `outputs/` | Tables and generated visual artefacts |
+| Research conclusions | `reports/` | Assumptions, evidence, interpretation and limitations |
+
+A generated table or chart is useful only when its assumptions and meaning are
+documented with it.
+
+## Current data formats
+
+The loader supports two tabular schemas.
 
 Single asset:
 
@@ -23,63 +46,124 @@ Multiple assets:
 index | TICKER_A_price | TICKER_B_price | TICKER_A_return | TICKER_B_return
 ```
 
-The loader first checks a local CSV cache under `data/raw/`. If the file
-is missing or does not contain the expected columns, adjusted close data
-are downloaded through `yfinance`, converted to returns and cached.
-Downloaded data are excluded from Git because they are external,
-regenerable artefacts.
+Prices are adjusted close values returned by `yfinance`. Returns are simple
+one-period percentage changes computed with `pct_change()`.
 
-## Stable project paths
+For a multi-asset download, rows containing any missing value are removed
+after prices and returns are combined. The resulting sample is therefore the
+intersection of dates with usable observations for every requested asset.
+This is convenient for the current spread diagnostic but can shorten the
+sample and must not be treated as a universal multi-asset data policy.
 
-Data and chart paths are resolved from the project root rather than the
-shell's current working directory. This prevents the same command from
-creating duplicate `data/` or `outputs/` directories when it is run
-from a different folder.
+## How loading and caching work
 
-Interactive Plotly charts are written to `outputs/plots/`. They are
-also excluded from Git because the HTML files are large and can be
-regenerated from the experiment.
+For each requested ticker set, the loader constructs one CSV path under
+`data/raw/`.
 
-## Experiment flow
+1. If the cache exists, it is read and accepted when it is non-empty and
+   contains the expected columns.
+2. Otherwise, prices are downloaded through `yfinance` with adjusted values.
+3. Daily simple returns are computed.
+4. Rows unusable under the current schema are removed.
+5. The resulting dataset is written to the local cache.
 
-`main.py` currently performs the following sequence:
+The cache check does not currently verify that stored dates match the active
+configuration, record the download timestamp, identify the source version or
+hash the transformation code. Changing a date range may therefore require a
+manual cache refresh. The cache is a convenience layer, not a versioned
+research dataset.
 
-1. read tickers, dates and simplified market assumptions from
-   `src/config.py`;
-2. load one or several assets;
-3. run the selected strategy objects;
+## Project paths
+
+Paths are resolved from the repository root rather than from the shell's
+current working directory. This prevents execution from another folder from
+creating duplicate `data/` or `outputs/` directories.
+
+| Artefact | Location | Git policy |
+| --- | --- | --- |
+| Downloaded price cache | `data/raw/` | Ignored; external and regenerable |
+| Interactive Plotly output | `outputs/plots/` | Ignored; large and regenerable |
+| Public pricing figures | `reports/pricing/figures/` | Versioned with their reports |
+| Parameter and comparison tables | `results/` | Versioned historical snapshots |
+| Private development notes | `rapport/` | Ignored |
+
+Public figures should come from a reproducible script or a documented
+experiment. Local HTML files remain useful for exploration, but a chart alone
+is not enough to support a conclusion.
+
+## How experiments are run
+
+`main.py` is currently a manual research entry point:
+
+1. read tickers, dates and simplified assumptions from the configuration;
+2. load a single-asset or multi-asset dataset;
+3. instantiate the selected strategy objects;
 4. compute absolute and benchmark-relative metrics;
-5. print the metric dictionaries;
+5. print metric dictionaries for inspection;
 6. write equity and drawdown charts.
 
-The code currently supports:
+The current Alpha code contains passive exposure, long/flat momentum,
+volatility-targeted momentum, price and return mean reversion, and an initial
+ratio-based two-asset spread diagnostic. I do not treat the spread prototype
+as cointegration-based pairs trading: it has no estimated hedge ratio,
+stationarity test or walk-forward calibration.
 
-- always-long exposure;
-- long/flat momentum;
-- momentum with volatility targeting and a no-trade band;
-- price and return mean reversion;
-- ratio-based spread mean reversion.
+## Running the project
 
-## Research artefacts
+Create a local environment and install the declared dependencies:
 
-- `results/` stores parameter grids and cross-asset comparison tables;
-- `reports/alpha_research/` explains the corresponding experiments;
-- `reports/engineering/` records decisions that affect reproducibility;
-- local raw data and generated charts remain outside version control.
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install -r requirements.txt
+```
 
-## Current engineering limits
+Run the manually configured Alpha workflow:
 
-- `main.py` is manually configured and mixes experiment selection with
-  reporting.
-- Results are not automatically tagged with a configuration hash or
-  code revision.
-- Cached data do not yet include a formal data-quality or provenance
-  manifest.
-- The `yfinance` source is convenient for learning but is not a
-  production-grade market data feed.
-- Historical CSV outputs can reflect different metric conventions, so
-  reports must state their assumptions.
+```bash
+python3 main.py
+```
 
-Future restructuring will follow actual research needs. Empty pricing,
-risk or portfolio modules are not created before those axes are
-implemented.
+Run the current automated suite:
+
+```bash
+python3 -m unittest discover -s tests
+```
+
+The current public tests validate the derivatives modules. Dedicated Alpha
+Research tests were deliberately deferred until that research block is
+revisited and should not be implied by the global command.
+
+Regenerate the public pricing figures:
+
+```bash
+python3 -m scripts.generate_pricing_figures
+```
+
+## Known technical limits
+
+| Area | Current limitation | Consequence |
+| --- | --- | --- |
+| Experiment control | `main.py` mixes selection, execution and printing | Runs are manual and configurations are easy to overwrite |
+| Cache identity | File names encode tickers but not dates or code version | A valid-looking cache can be stale for the requested experiment |
+| Provenance | No manifest records source, retrieval time or transformations | A historical dataset cannot yet be reconstructed exactly from metadata alone |
+| Multi-asset alignment | Complete-case `dropna()` uses the common date intersection | Missingness can change the effective sample across universes |
+| Data source | `yfinance` is convenient but not a production-grade feed | Coverage, revisions and field semantics require caution |
+| Result identity | Outputs are not tagged with a configuration hash or Git revision | CSV snapshots can be separated from the code that produced them |
+| Metrics | Historical files use more than one annualisation and risk-free-rate convention | Results from different snapshots must not be combined mechanically |
+| Alpha validation | No current automated Alpha regression suite | Strategy and metric changes require manual review until tests are rebuilt |
+
+## Planned data improvements
+
+The data branch will be developed before more complex modelling depends on
+it. Its intended progression is:
+
+1. immutable raw observations and explicit normalised schemas;
+2. source metadata, quality flags and dataset manifests;
+3. timezone-aware timestamps and causal point-in-time joins;
+4. explicit staleness policies and traceable as-of lookups;
+5. train, validation and test datasets tied to experiment configurations;
+6. event-level market-data contracts for the future microstructure branch.
+
+This is planned work, not an existing package. I will add new directories only
+when there is working code and a clear way to validate it.

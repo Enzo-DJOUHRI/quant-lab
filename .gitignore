@@ -22,10 +22,6 @@ venv/
 road_map/
 rapport/
 
-# Local historical files not presented as public work
-tests/
-src/data_loader_initial.py
-
 # Downloaded market data and regenerable interactive plots
 data/raw/
 outputs/plots/

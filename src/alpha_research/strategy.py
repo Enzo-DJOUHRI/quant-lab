@@ -39,7 +39,7 @@ class MomentumStrategy(Strategy):
         self.data["peak"] = self.data["equity"].cummax()
         self.data["drawdown"] = (self.data["equity"] - self.data["peak"]) / self.data["peak"]
         return self.data
-    
+
 class MomentumVolTargetingStrategy(Strategy):
 
     def __init__(self, data, horizon, vol_window, target_vol, max_leverage, transaction_cost=0.0, rebal_threshold=0.0, trading_days=252):
@@ -88,13 +88,13 @@ class MeanReversionPriceStrategy(Strategy):
         super().__init__(data)  # Reuse the parent data-copying constructor.
         self.z_threshold = z_threshold
         self.rolling_days = rolling_days
-    
+
     def run(self):
         self.data["rolling_mean"] = self.data["price"].rolling(self.rolling_days).mean()
         self.data["rolling_std"] = self.data["price"].rolling(self.rolling_days).std()
-        self.data["z_score"] = (self.data["price"] - self.data["rolling_mean"]) / self.data["rolling_std"] 
+        self.data["z_score"] = (self.data["price"] - self.data["rolling_mean"]) / self.data["rolling_std"]
         self.data["raw_signal"] = np.where(
-            self.data["z_score"] < -self.z_threshold, 1, 
+            self.data["z_score"] < -self.z_threshold, 1,
             np.where(self.data["z_score"] > self.z_threshold, -1, 0))
         self.data["signal"] = self.data["raw_signal"].shift(1).fillna(0).astype(int)
         self.data["strategy_return"] = self.data["signal"] * self.data["return"]
@@ -102,20 +102,20 @@ class MeanReversionPriceStrategy(Strategy):
         self.data["peak"] = self.data["equity"].cummax()
         self.data["drawdown"] = (self.data["equity"] - self.data["peak"]) / self.data["peak"]
         return self.data
-        
+
 class MeanReversionReturnStrategy(Strategy):
 
     def __init__(self, data, z_threshold, rolling_days):
         super().__init__(data)  # Reuse the parent data-copying constructor.
         self.z_threshold = z_threshold
         self.rolling_days = rolling_days
-    
+
     def run(self):
         self.data["rolling_mean"] = self.data["return"].rolling(self.rolling_days).mean()
         self.data["rolling_std"] = self.data["return"].rolling(self.rolling_days).std()
-        self.data["z_score"] = (self.data["return"] - self.data["rolling_mean"]) / self.data["rolling_std"] 
+        self.data["z_score"] = (self.data["return"] - self.data["rolling_mean"]) / self.data["rolling_std"]
         self.data["raw_signal"] = np.where(
-            self.data["z_score"] < -self.z_threshold, 1, 
+            self.data["z_score"] < -self.z_threshold, 1,
             np.where(self.data["z_score"] > self.z_threshold, -1, 0))
         self.data["signal"] = self.data["raw_signal"].shift(1).fillna(0).astype(int)
         self.data["strategy_return"] = self.data["signal"] * self.data["return"]
@@ -141,9 +141,9 @@ class SpreadMeanReversionStrategy(Strategy):
         self.data["spread"] = self.data[price_1_col] / self.data[price_2_col]
         self.data["rolling_mean"] = self.data["spread"].rolling(self.rolling_days).mean()
         self.data["rolling_std"] = self.data["spread"].rolling(self.rolling_days).std()
-        self.data["z_score"] = (self.data["spread"] - self.data["rolling_mean"]) / self.data["rolling_std"] 
+        self.data["z_score"] = (self.data["spread"] - self.data["rolling_mean"]) / self.data["rolling_std"]
         self.data["raw_signal"] = np.where(
-            self.data["z_score"] < -self.z_threshold, 1, 
+            self.data["z_score"] < -self.z_threshold, 1,
             np.where(self.data["z_score"] > self.z_threshold, -1, 0))
         self.data["signal"] = self.data["raw_signal"].shift(1).fillna(0).astype(int)
         self.data["spread_return"] = self.data[return_1_col] - self.data[return_2_col]

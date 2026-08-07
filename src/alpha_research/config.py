@@ -1,4 +1,4 @@
-# src/config.py
+# src/alpha_research/config.py
 
 TICKERS = ["BTC-USD"]
 START_DATE = "2015-01-01"

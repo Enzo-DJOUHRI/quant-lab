@@ -1,10 +1,10 @@
-from src.data_loader import DataLoader
-import src.strategy as strat
-from src.metrics import compute_metrics
-from src.plots import BacktestPlotter
-from src.config import TICKERS, START_DATE, END_DATE, TRANSACTION_COST, RISK_FREE_RATE
+from src.alpha_research.data_loader import DataLoader
+import src.alpha_research.strategy as strat
+from src.alpha_research.metrics import compute_metrics
+from src.alpha_research.plots import BacktestPlotter
+from src.alpha_research.config import TICKERS, START_DATE, END_DATE, TRANSACTION_COST, RISK_FREE_RATE
 
-if len(TICKERS) == 1:    
+if len(TICKERS) == 1:
     loader = DataLoader(TICKERS, START_DATE, END_DATE)
     data = loader.load_mono()
 
@@ -47,7 +47,7 @@ if len(TICKERS) == 1:
     print("=== Performance Metrics Momentum ===")
     for key, value in metrics_mom.items():
         print(f"{key}: {value}")
-    
+
     print("=== Performance Metrics Momentum Vol Targeting ===")
     for key, value in metrics_mom_vol_target.items():
         print(f"{key}: {value}")
