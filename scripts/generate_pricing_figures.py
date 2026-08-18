@@ -19,7 +19,7 @@ def main():
 
     tree_path = plot_american_put_tree(
         tree,
-        "reports/pricing/figures/american_put_tree.png",
+        "reports/pricing/figures/binomial/american_put_tree.png",
     )
 
     n_steps_values = list(range(1, 201))
@@ -48,7 +48,7 @@ def main():
         n_steps_values,
         crr_prices,
         bsm_price,
-        "reports/pricing/figures/crr_bsm_convergence.png",
+        "reports/pricing/figures/binomial/crr_bsm_convergence.png",
     )
 
     print(f"American put price: {tree['price']:.6f}")

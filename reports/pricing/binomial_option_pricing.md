@@ -301,7 +301,7 @@ aligns more or less closely with the strike as `N` changes, producing an
 even/odd oscillation whose amplitude decreases as the time step becomes
 smaller.
 
-![European CRR convergence toward Black-Scholes-Merton](figures/crr_bsm_convergence.png)
+![European CRR convergence toward Black-Scholes-Merton](figures/binomial/crr_bsm_convergence.png)
 
 ## American early-exercise result
 
@@ -314,7 +314,7 @@ after one up move, continuation remains preferable. This small example
 makes the comparison between intrinsic and continuation value directly
 inspectable.
 
-![American put CRR tree and early-exercise policy](figures/american_put_tree.png)
+![American put CRR tree and early-exercise policy](figures/binomial/american_put_tree.png)
 
 ## Reproducible figures
 
@@ -325,7 +325,7 @@ project root with:
 python3 -m scripts.generate_pricing_figures
 ```
 
-The script writes the PNG files under `reports/pricing/figures/` and prints
+The script writes the PNG files under `reports/pricing/figures/binomial/` and prints
 the American put price, the BSM benchmark, the final CRR estimate and its
 absolute error.
 

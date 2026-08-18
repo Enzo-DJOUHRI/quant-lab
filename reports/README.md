@@ -48,6 +48,7 @@ returns or investment quality.
 | Engineering | [Data and experiment workflow](engineering/data_and_experiment_workflow.md) | Current implementation reference | Document data schemas, caching, outputs, reproducibility and technical limits |
 | Option pricing | [Vanilla option pricing](pricing/vanilla_option_pricing.md) | Validated module | Explain the Black-Scholes-Merton European call and put implementation |
 | Option pricing | [Binomial option pricing](pricing/binomial_option_pricing.md) | Validated module | Explain CRR pricing, American early exercise, convergence and stopping diagnostics |
+| Option sensitivities | [Black-Scholes-Merton Greeks](pricing/black_scholes_greeks.md) | Validated module | Derive, test and visualise Delta, Gamma, Vega, Theta and Rho |
 
 ## How to read the numerical results
 
