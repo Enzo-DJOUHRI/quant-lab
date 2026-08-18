@@ -43,7 +43,7 @@ returns or investment quality.
 | --- | --- | --- | --- |
 | Alpha research | [Strategy comparison](alpha_research/strategy_comparison.md) | Historical research snapshot | Compare passive, momentum and mean-reversion diagnostics without treating the initial ratio spread as pairs trading |
 | Alpha research | [Momentum transaction costs](alpha_research/momentum_transaction_costs.md) | Historical research snapshot | Explain the linear cost model and measure its effect on a fixed momentum rule |
-| Alpha research | [Momentum volatility targeting](alpha_research/momentum_volatility_targeting.md) | Historical parameter study | Study dynamic exposure, turnover, costs and no-trade bands on SPY and BTC |
+| Alpha research | [Momentum volatility targeting](alpha_research/momentum_volatility_targeting.md) | Historical research snapshot | Study dynamic exposure, turnover, costs and no-trade bands on SPY and BTC |
 | Alpha research | [Performance metrics](alpha_research/performance_metrics.md) | Current implementation reference | Define the metric formulas, code semantics and known measurement caveats |
 | Engineering | [Data and experiment workflow](engineering/data_and_experiment_workflow.md) | Current implementation reference | Document data schemas, caching, outputs, reproducibility and technical limits |
 | Option pricing | [Vanilla option pricing](pricing/vanilla_option_pricing.md) | Validated module | Explain the Black-Scholes-Merton European call and put implementation |

@@ -30,7 +30,7 @@ its validation.
 
 | Book | Current status | Role in Quant Lab |
 | --- | --- | --- |
-| John C. Hull, *Options, Futures, and Other Derivatives* | In progress; chapters 14, 15 and 19 completed | Market conventions, Black-Scholes-Merton, Greeks, volatility, numerical methods and risk |
+| John C. Hull, *Options, Futures, and Other Derivatives* | Chapter 20 in progress; chapters 14, 15 and 19 completed | Market conventions, Black-Scholes-Merton, Greeks, volatility, numerical methods and risk |
 | Steven E. Shreve, *Stochastic Calculus for Finance I: The Binomial Asset Pricing Model* | Chapters 1-5 completed | No-arbitrage, replication, risk-neutral pricing, conditional expectations and American exercise in discrete time |
 | Steven E. Shreve, *Stochastic Calculus for Finance II: Continuous-Time Models* | Planned | Continuous-time stochastic calculus and a more rigorous foundation for advanced pricing models |
 
@@ -61,8 +61,8 @@ listed module already exists.
 I plan to develop the lab in the following order because each step provides
 tools needed by the next one:
 
-1. complete the derivatives path through Greeks, implied volatility and Monte
-   Carlo;
+1. continue the derivatives path with implied volatility and Monte Carlo,
+   building on the validated pricing and Greeks foundation;
 2. build the risk and empirical-volatility foundations;
 3. stabilise the historical backtester before making new Alpha claims;
 4. continue Alpha research, portfolio construction and time-series work with
