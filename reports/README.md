@@ -49,6 +49,7 @@ returns or investment quality.
 | Option pricing | [Vanilla option pricing](pricing/vanilla_option_pricing.md) | Validated module | Explain the Black-Scholes-Merton European call and put implementation |
 | Option pricing | [Binomial option pricing](pricing/binomial_option_pricing.md) | Validated module | Explain CRR pricing, American early exercise, convergence and stopping diagnostics |
 | Option sensitivities | [Black-Scholes-Merton Greeks](pricing/black_scholes_greeks.md) | Validated module | Derive, test and visualise Delta, Gamma, Vega, Theta and Rho |
+| Option volatility | [Implied volatility, smiles and surfaces](pricing/implied_vol_smile_surface.md) | Current implementation reference | Validate IV inversion and synthetic volatility structures; preserve the market-data stage as the next checkpoint |
 
 ## How to read the numerical results
 

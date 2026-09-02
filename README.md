@@ -30,7 +30,7 @@ its validation.
 
 | Book | Current status | Role in Quant Lab |
 | --- | --- | --- |
-| John C. Hull, *Options, Futures, and Other Derivatives* | Chapter 20 in progress; chapters 14, 15 and 19 completed | Market conventions, Black-Scholes-Merton, Greeks, volatility, numerical methods and risk |
+| John C. Hull, *Options, Futures, and Other Derivatives* | Chapters 14, 15, 19 and 20 completed | Market conventions, Black-Scholes-Merton, Greeks, volatility, numerical methods and risk |
 | Steven E. Shreve, *Stochastic Calculus for Finance I: The Binomial Asset Pricing Model* | Chapters 1-5 completed | No-arbitrage, replication, risk-neutral pricing, conditional expectations and American exercise in discrete time |
 | Steven E. Shreve, *Stochastic Calculus for Finance II: Continuous-Time Models* | Planned | Continuous-time stochastic calculus and a more rigorous foundation for advanced pricing models |
 
@@ -42,7 +42,7 @@ II is included as the next theoretical step; I have not studied it yet.
 | Direction | Main purpose | Roadmap position |
 | --- | --- | --- |
 | Data and research infrastructure | Data provenance, schemas, quality checks, point-in-time causality and reproducible experiments | Cross-cutting foundation |
-| Derivatives pricing and volatility | Vanilla and American option pricing, Greeks, implied volatility and numerical methods | Current focus |
+| Derivatives pricing and volatility | Vanilla and American option pricing, Greeks, implied volatility and numerical methods | Synthetic IV surface validated; market snapshot next |
 | Simulation and risk | GBM, Monte Carlo, uncertainty, variance reduction, VaR, Expected Shortfall and stress testing | Next core |
 | Alpha research | Robust backtesting, transaction costs, exposure, sensitivity and out-of-sample validation | Existing research base to stabilise |
 | Time series and pairs research | Stationarity, forecasting, cointegration and dependence; pairs trading is a planned extension, not a current implementation | Planned |
@@ -61,8 +61,8 @@ listed module already exists.
 I plan to develop the lab in the following order because each step provides
 tools needed by the next one:
 
-1. continue the derivatives path with implied volatility and Monte Carlo,
-   building on the validated pricing and Greeks foundation;
+1. apply the validated implied-volatility and synthetic-surface workflow to one
+   frozen option-chain snapshot, then continue with Monte Carlo;
 2. build the risk and empirical-volatility foundations;
 3. stabilise the historical backtester before making new Alpha claims;
 4. continue Alpha research, portfolio construction and time-series work with
@@ -129,6 +129,8 @@ research axis contains working code.
 
 - Start with the [research report index](reports/README.md) for completed
   analyses and their limitations.
+- See the [implied-volatility report](reports/pricing/implied_vol_smile_surface.md)
+  for the current solver, synthetic smiles, surface and market-data boundary.
 - Read the [data and experiment workflow](reports/engineering/data_and_experiment_workflow.md)
   for the current engineering conventions.
 - Inspect [`src/`](src/) for implementation and [`tests/`](tests/) for the
