@@ -548,7 +548,7 @@ $$
 
 $$
 \sigma_{\mathrm{realised}}
-=\operatorname{std}(r_t)\sqrt{N},
+=\mathrm{Std}(r_t)\sqrt{N},
 $$
 
 where $N$ is the stated annualisation factor. Realised volatility is backward
